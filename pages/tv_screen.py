@@ -1,0 +1,10 @@
+print("="*60)
+print("DDSS TV SCREEN")
+print("="*60)
+
+print("LOT      STATUS")
+print("--------------------")
+print("5HG1139  GREEN")
+print("5HG1140  GREEN")
+print("5HG1141  RED")
+print("5HG1142  YELLOW")
