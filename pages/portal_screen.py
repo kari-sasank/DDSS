@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 from sqlalchemy import create_engine
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 st.set_page_config(
     page_title="DDSS Supplier Dashboard",
@@ -10,10 +13,12 @@ st.set_page_config(
 st.title("DDSS SUPPLIER DASHBOARD")
 
 # SQL CONNECTION
+db_server = os.getenv("DB_SERVER")
+db_name = os.getenv("DB_NAME")
+
 connection_string = (
-    "mssql+pyodbc://@SAMEERA\\SQLEXPRESS/sam"
+    f"mssql+pyodbc://@{db_server}/{db_name}"
     "?driver=ODBC+Driver+17+for+SQL+Server"
-    "&trusted_connection=yes"
 )
 
 engine = create_engine(connection_string)
