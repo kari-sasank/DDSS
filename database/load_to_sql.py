@@ -1,24 +1,23 @@
 import pandas as pd
 from sqlalchemy import create_engine
 
-# Read CSV file
-df = pd.read_excel("data/Delivery schedule (1).xls", header=1)
+server = "SAMEERA\\SQLEXPRESS"
+database = "sam"
 
-# SQL Server connection
 connection_string = (
-    "mssql+pyodbc://@SAMEERA\\SQLEXPRESS/sam"
+    f"mssql+pyodbc://@{server}/{database}"
     "?driver=ODBC+Driver+17+for+SQL+Server"
-    "&trusted_connection=yes"
 )
 
 engine = create_engine(connection_string)
 
-# Load data into SQL Server table
+df = pd.read_csv("output/supplier_report.csv")
+
 df.to_sql(
-    "SupplierDelivery",
-    con=engine,
+    "supplier_report",
+    engine,
     if_exists="replace",
     index=False
 )
 
-print("Data loaded successfully!")
+print("Data loaded to SQL Server successfully!")
