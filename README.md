@@ -1,3 +1,63 @@
+# DDSS Project
+
+## Prerequisites
+
+- Python 3.12
+- SQL Server Express
+- SSMS
+
+## Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+## Environment Variables
+
+Create a `.env` file:
+
+```env
+DB_SERVER=SAMEERA\SQLEXPRESS
+DB_NAME=sam
+
+INPUT_FOLDER=data
+OUTPUT_FOLDER=output
+REPORT_FOLDER=reports
+```
+
+## Run Data Processing
+
+```bash
+python data/process_delivery.py
+```
+
+## Load Data Into SQL Server
+
+```bash
+python database/load_to_sql.py
+```
+
+## Run Dashboard
+
+```bash
+streamlit run app.py
+```
+
+## Project Flow
+
+Excel/CSV
+↓
+data/
+↓
+process_delivery.py
+↓
+output/supplier_report.csv
+↓
+load_to_sql.py
+↓
+SQL Server
+↓
+Streamlit Dashboard
 DDSS (Dynamic Delivery Scheduling System)
 
 Project Overview
