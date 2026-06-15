@@ -5,26 +5,20 @@ engine = create_engine(
     "mssql+pyodbc://@SAMEERA\\SQLEXPRESS/sam?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes"
 )
 
-query = """
-SELECT
-    Supplier_Name,
-    COUNT(*) AS Total_Deliveries,
-    SUM(
-        CASE
-            WHEN Actual_Delivery_Time > Planned_Delivery_Time
-            THEN 1
-            ELSE 0
-        END
-    ) AS Default_Count
-FROM SupplierDelivery
-GROUP BY Supplier_Name
-"""
+df = pd.read_sql("SELECT * FROM SupplierDelivery", engine)
 
-df = pd.read_sql(query, engine)
+result = (
+    df.groupby("Supplier Name")
+      .agg(
+          Total_Deliveries=("Lot No.", "count"),
+          Pending=("Received QTY", lambda x: x.isna().sum())
+      )
+      .reset_index()
+)
 
-df["Risk_Percentage"] = (
-    df["Default_Count"] /
-    df["Total_Deliveries"]
+result["Risk_Percentage"] = (
+    result["Pending"] /
+    result["Total_Deliveries"]
 ) * 100
 
-print(df)
+print(result)

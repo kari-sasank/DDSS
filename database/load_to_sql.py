@@ -2,7 +2,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 # Read CSV file
-df = pd.read_csv("data/supplier_delivery.csv")
+df = pd.read_excel("data/Delivery schedule (1).xls", header=1)
 
 # SQL Server connection
 connection_string = (
@@ -17,7 +17,7 @@ engine = create_engine(connection_string)
 df.to_sql(
     "SupplierDelivery",
     con=engine,
-    if_exists="append",
+    if_exists="replace",
     index=False
 )
 
