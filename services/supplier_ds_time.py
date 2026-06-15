@@ -1,38 +1,24 @@
 import pandas as pd
+from sqlalchemy import create_engine
 
-data = {
-    "Truck_ID": ["TR001", "TR002", "TR003", "TR004"],
-    "Supplier": [
-        "ASK AUTOMOTIVE",
-        "VARROC ENGINEERING",
-        "FIEM",
-        "ASK AUTOMOTIVE"
-    ],
-    "Arrival_Time": [
-        "08:00",
-        "08:15",
-        "08:30",
-        "08:45"
-    ]
-}
+engine = create_engine(
+    "mssql+pyodbc://@SAMEERA\\SQLEXPRESS/sam?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes"
+)
 
-df = pd.DataFrame(data)
+df = pd.read_sql("SELECT * FROM SupplierDelivery", engine)
 
-DOCKS_AVAILABLE = 2
-UNLOADING_TIME = 30
+result = (
+    df.groupby("Supplier Name")
+      .agg(
+          Total_Shipment=("Shipment QTY", "sum"),
+          Total_Received=("Received QTY", "sum")
+      )
+      .reset_index()
+)
 
-df["DS_Slot"] = ""
+result["Delivery_Performance"] = (
+    result["Total_Received"] /
+    result["Total_Shipment"]
+) * 100
 
-for i in range(len(df)):
-    dock = (i % DOCKS_AVAILABLE) + 1
-
-    slot_start = pd.Timestamp("2026-06-12 08:00") + pd.Timedelta(
-        minutes=(i // DOCKS_AVAILABLE) * UNLOADING_TIME
-    )
-
-    df.loc[i, "DS_Slot"] = (
-        f"Dock-{dock} : "
-        f"{slot_start.strftime('%H:%M')}"
-    )
-
-print(df)
+print(result)
