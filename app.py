@@ -10,7 +10,7 @@ page = st.sidebar.selectbox(
 
 if page == "TV Screen":
 
-    st.title("🚚 DDSS TV SCREEN")
+    st.title("DDSS TV SCREEN")
 
     data = pd.DataFrame({
         "Lot": ["5HG1139", "5HG1140", "5HG1141", "5HG1142"],

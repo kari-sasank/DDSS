@@ -3,6 +3,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 import os
 from dotenv import load_dotenv
+import plotly.express as px
 
 load_dotenv()
 
@@ -20,7 +21,7 @@ db_name = os.getenv("DB_NAME")
 connection_string = (
     f"mssql+pyodbc://@{db_server}/{db_name}"
     "?driver=ODBC+Driver+17+for+SQL+Server"
-)
+) 
 
 engine = create_engine(connection_string)
 
@@ -43,6 +44,7 @@ df["Delivery_Accuracy_%"] = (
     df["Received_Qty"]
     / df["Ordered_Qty"].replace(0, 1)
 ) * 100
+df["Delivery_Accuracy_%"] = df["Delivery_Accuracy_%"].clip(lower=0, upper=100)
 
 # Status Logic
 def get_status(acc):
@@ -76,27 +78,70 @@ st.divider()
 
 st.subheader("Live Supplier Status")
 
+display_df = df.rename(columns={
+    "Supplier_Name": "Supplier",
+    "Total_Deliveries": "Total Deliveries",
+    "Ordered_Qty": "Ordered Quantity",
+    "Received_Qty": "Received Quantity",
+    "Delivery_Accuracy_%": "Delivery Accuracy (%)",
+    "Status": "Delivery Status"
+})
+
 st.dataframe(
-    df[
-        [
-            "Supplier_Name",
-            "Total_Deliveries",
-            "Ordered_Qty",
-            "Received_Qty",
-            "Delivery_Accuracy_%",
-            "Status"
-        ]
-    ],
+    display_df,
     use_container_width=True,
     hide_index=True
 )
 
 st.divider()
 
-st.subheader("Supplier Accuracy Chart")
+st.subheader("Supplier Delivery Performance")
 
 chart_df = df[
     ["Supplier_Name", "Delivery_Accuracy_%"]
 ].set_index("Supplier_Name")
 
-st.bar_chart(chart_df)
+chart_df = (
+    df[["Supplier_Name", "Delivery_Accuracy_%"]]
+    .sort_values(
+        by="Delivery_Accuracy_%",
+        ascending=False
+    )
+)
+
+fig = px.bar(
+    chart_df,
+    x="Supplier_Name",
+    y="Delivery_Accuracy_%",
+    color="Delivery_Accuracy_%",
+    color_continuous_scale=[
+        "#d73027",
+        "#fee08b",
+        "#1a9850"
+    ]
+)
+
+fig.update_layout(
+    title="Supplier Delivery Performance",
+    xaxis_title="Supplier",
+    yaxis_title="Accuracy (%)",
+    height=550
+)
+
+fig.update_xaxes(
+    tickangle=-45
+)
+
+fig.update_traces(
+    texttemplate="%{y:.1f}",
+    textposition="outside"
+)
+
+st.plotly_chart(
+    fig,
+    use_container_width=True
+)
+
+st.caption(
+    "Higher accuracy percentages indicate better supplier delivery performance."
+)

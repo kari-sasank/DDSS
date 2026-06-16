@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 from sqlalchemy import create_engine
 import os
 from dotenv import load_dotenv
@@ -43,6 +44,7 @@ df = df.fillna(0)
 df["Pending_Qty"] = (
     df["Ordered_Qty"] - df["Received_Qty"]
 )
+df["Negative_Qty"] = -df["Pending_Qty"]
 
 df["Delivery_Accuracy_%"] = (
     df["Received_Qty"] /
@@ -75,22 +77,31 @@ st.divider()
 # TABLE
 st.subheader("Supplier Performance")
 
+display_df = df[
+    [
+        "Supplier_Name",
+        "Total_Deliveries",
+        "Ordered_Qty",
+        "Received_Qty",
+        "Pending_Qty",
+        "Delivery_Accuracy_%",
+        "Status"
+    ]
+].rename(columns={
+    "Supplier_Name": "Supplier",
+    "Total_Deliveries": "Total Deliveries",
+    "Ordered_Qty": "Ordered Quantity",
+    "Received_Qty": "Received Quantity",
+    "Pending_Qty": "Pending Quantity",
+    "Delivery_Accuracy_%": "Delivery Accuracy (%)",
+    "Status": "Delivery Status"
+})
+
 st.dataframe(
-    df[
-        [
-            "Supplier_Name",
-            "Total_Deliveries",
-            "Ordered_Qty",
-            "Received_Qty",
-            "Pending_Qty",
-            "Delivery_Accuracy_%",
-            "Status"
-        ]
-    ],
+    display_df,
     use_container_width=True,
     hide_index=True
 )
-
 st.divider()
 
 # TOP SUPPLIERS
@@ -120,7 +131,33 @@ chart_df = df[
     ["Supplier_Name", "Delivery_Accuracy_%"]
 ].set_index("Supplier_Name")
 
-st.bar_chart(chart_df)
+import plotly.express as px
+
+chart_df = df[
+    ["Supplier_Name", "Received_Qty", "Negative_Qty"]
+]
+
+fig = px.bar(
+    chart_df,
+    x="Supplier_Name",
+    y=["Received_Qty", "Negative_Qty"],
+    barmode="group",
+    title="Supplier Delivery Performance",
+    color_discrete_sequence=["#2E8B57", "#DC143C"]
+)
+
+st.plotly_chart(fig, use_container_width=True)
+st.markdown("""
+### Graph Explanation
+
+🟢 Green Bars = Quantity Successfully Received
+
+🔴 Red Bars = Pending / Negative Quantity
+
+Higher green bars indicate better supplier performance.
+
+Higher red bars indicate delivery risk and pending shipments.
+""")
 
 st.divider()
 
