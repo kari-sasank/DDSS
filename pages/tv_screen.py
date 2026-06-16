@@ -104,6 +104,24 @@ connection_string = (
     "?driver=ODBC+Driver+17+for+SQL+Server"
 ) 
 
+load_dotenv()
+
+st.set_page_config(
+    page_title="DDSS TV Screen",
+    layout="wide"
+)
+
+st.title("DDSS TV SCREEN")
+
+# SQL CONNECTION
+db_server = os.getenv("DB_SERVER")
+db_name = os.getenv("DB_NAME")
+
+connection_string = (
+    f"mssql+pyodbc://@{db_server}/{db_name}"
+    "?driver=ODBC+Driver+17+for+SQL+Server"
+)
+
 engine = create_engine(connection_string)
 
 query = """
@@ -176,6 +194,40 @@ columns_to_show = st.sidebar.multiselect(
 )
 st.dataframe(
     display_df[columns_to_show],
+)
+
+# Sort best to worst
+df = df.sort_values(
+    by="Delivery_Accuracy_%",
+    ascending=False
+)
+
+# KPI Cards
+green = len(df[df["Status"].str.contains("GREEN")])
+yellow = len(df[df["Status"].str.contains("YELLOW")])
+red = len(df[df["Status"].str.contains("RED")])
+
+c1, c2, c3 = st.columns(3)
+
+c1.success(f"🟢 GREEN : {green}")
+c2.warning(f"🟡 YELLOW : {yellow}")
+c3.error(f"🔴 RED : {red}")
+
+st.divider()
+
+st.subheader("Live Supplier Status")
+
+st.dataframe(
+    df[
+        [
+            "Supplier_Name",
+            "Total_Deliveries",
+            "Ordered_Qty",
+            "Received_Qty",
+            "Delivery_Accuracy_%",
+            "Status"
+        ]
+    ],
     use_container_width=True,
     hide_index=True
 )
@@ -183,6 +235,7 @@ st.dataframe(
 st.divider()
 
 st.subheader("Supplier Delivery Performance")
+st.subheader("Supplier Accuracy Chart")
 
 chart_df = df[
     ["Supplier_Name", "Delivery_Accuracy_%"]
@@ -232,3 +285,4 @@ st.plotly_chart(
 st.caption(
     "Higher accuracy percentages indicate better supplier delivery performance."
 )
+st.bar_chart(chart_df)
