@@ -4,6 +4,87 @@ from sqlalchemy import create_engine
 import os
 from dotenv import load_dotenv
 import plotly.express as px
+st.markdown("""
+<style>
+
+.stApp {
+    background-color: #f4f7fb;
+    color: #1e293b;
+}
+
+.main .block-container {
+    background-color: #f4f7fb;
+}
+
+section[data-testid="stSidebar"] {
+    background-color: #e9eef5;
+}
+
+section[data-testid="stSidebar"] * {
+    color: #1e293b !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #1e293b !important;
+}
+
+p, span, label, div {
+    color: #475569 !important;
+}
+
+[data-testid="metric-container"] {
+    background: white;
+    border: 1px solid #dbe4ee;
+    border-radius: 12px;
+    padding: 15px;
+}
+            /* Selectbox */
+.stSelectbox > div > div {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    border: 1px solid #dbe4ee !important;
+    border-radius: 10px !important;
+}
+
+/* Dropdown text */
+.stSelectbox label {
+    color: #334155 !important;
+    font-weight: 600;
+}
+
+/* Input fields */
+.stTextInput input,
+.stNumberInput input {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    border: 1px solid #dbe4ee !important;
+    border-radius: 10px !important;
+}
+            /* Force light selectbox */
+div[data-baseweb="select"] > div {
+    background: white !important;
+    color: #1e293b !important;
+    border: 1px solid #dbe4ee !important;
+    border-radius: 10px !important;
+}
+
+/* Selected value */
+div[data-baseweb="select"] span {
+    color: #1e293b !important;
+}
+
+/* Dropdown menu */
+div[role="listbox"] {
+    background: white !important;
+}
+
+div[role="option"] {
+    color: #1e293b !important;
+    background: white !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 load_dotenv()
 
@@ -86,9 +167,15 @@ display_df = df.rename(columns={
     "Delivery_Accuracy_%": "Delivery Accuracy (%)",
     "Status": "Delivery Status"
 })
+st.sidebar.header("Filters")
 
+columns_to_show = st.sidebar.multiselect(
+    "Select columns to display",
+    options=display_df.columns.tolist(),
+    default=display_df.columns.tolist()
+)
 st.dataframe(
-    display_df,
+    display_df[columns_to_show],
     use_container_width=True,
     hide_index=True
 )
